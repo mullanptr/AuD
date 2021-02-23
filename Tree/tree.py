@@ -34,7 +34,7 @@ class _Leaf(_AbstractNode):
         raise ValueError(f'Element "{key}" not in Datastructure.')
 
     def __setitem__(self, *args):
-        raise Error('Someting went fundamentally wrong!\nReached __setitem__() of class _Leaf; Should never happen.')
+        raise Error('Something went fundamentally wrong!\nReached __setitem__() of class _Leaf; Should never happen.')
 
     def __str__(self):
         return '_'
@@ -42,7 +42,7 @@ class _Leaf(_AbstractNode):
     def __len__(self):
         return 0
 
-class _Node(_AbstractNode):
+class Node(_AbstractNode):
 
     def __init__(self, key=None, value=None):
 
@@ -76,13 +76,13 @@ class _Node(_AbstractNode):
 
         if self.key < key:
             if isinstance(self.left, _Leaf):
-                self.left = _Node(key=key, value=value)
+                self.left = Node(key=key, value=value)
             else:
                 self.left[key] = value
             return
         if self.key > key:
             if isinstance(self.right, _Leaf):
-                self.right = _Node(key=key, value=value)
+                self.right = Node(key=key, value=value)
             else:
                 self.right[key] = value
             return
@@ -91,7 +91,7 @@ class _Node(_AbstractNode):
         return 1 + len(self.left) + len(self.right)
 
 if __name__ == '__main__':
-    T = _Node()
+    T = Node()
     T['b'] = 2
     T['c'] = 3
     T['d'] = 4
