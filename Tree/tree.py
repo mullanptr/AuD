@@ -92,11 +92,26 @@ class Node(_AbstractNode):
             for k, v in self.right.items():
                 yield k, v
 
+    def __iadd__(self, other, overwrite=True):
+        for k, v in other.items():
+            if k not in self or overwrite:
+                self[k] = v
+        return self
+
+    def __add__(self, other, overwrite=True):
+        new = Node()
+        for k, v in self.items():
+            new[k] = v
+        for k, v in other.items():
+            if k not in self or overwrite:
+                new[k] = v
+        return new
+
     def _haskey__(self):
         return hasattr(self,'key')
 
     def __str__(self):
-        return f' ({str(self.left)}-{str(self.value)}-{str(self.right)}) '
+        return f' ({str(self.left)} - {str(self.key)}: {str(self.value)} - {str(self.right)}) '
 
     def __contains__(self, key):
         if (k:= not self._haskey__()): return k # key is None -> not a grown tree
