@@ -37,7 +37,10 @@ class _Leaf(_AbstractNode):
         raise Error('Something went fundamentally wrong!\nReached __setitem__() of class _Leaf; Should never happen.')
 
     def traverse(self):
-        return[]
+        return []
+
+    def keys(self):
+        return None
 
     def __str__(self):
         return '_'
@@ -58,6 +61,36 @@ class Node(_AbstractNode):
     def traverse(self):
         if (k:= not self._haskey__()): raise RuntimeError # key is None -> not a grown tree
         return [(self.key, self.value)] + self.left.traverse() + self.right.traverse()
+
+    def keys(self):
+        if (k:= not self._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        yield self.key
+        if not isinstance(self.left, _Leaf):
+            for k in self.left.keys():
+                yield k
+        if not isinstance(self.right, _Leaf):
+            for k in self.right.keys():
+                yield k
+
+    def values(self):
+        if (k:= not self._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        yield self.value
+        if not isinstance(self.left, _Leaf):
+            for v in self.left.values():
+                yield v
+        if not isinstance(self.right, _Leaf):
+            for v in self.right.values():
+                yield v
+
+    def items(self):
+        if (k:= not self._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        yield (self.key, self.value)
+        if not isinstance(self.left, _Leaf):
+            for k, v in self.left.items():
+                yield k, v
+        if not isinstance(self.right, _Leaf):
+            for k, v in self.right.items():
+                yield k, v
 
     def _haskey__(self):
         return hasattr(self,'key')
