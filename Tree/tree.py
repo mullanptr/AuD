@@ -36,6 +36,9 @@ class _Leaf(_AbstractNode):
     def __setitem__(self, *args):
         raise Error('Something went fundamentally wrong!\nReached __setitem__() of class _Leaf; Should never happen.')
 
+    def traverse(self):
+        return[]
+
     def __str__(self):
         return '_'
 
@@ -51,6 +54,10 @@ class Node(_AbstractNode):
         self.value = value
         self.left = _Leaf()
         self.right = _Leaf()
+
+    def traverse(self):
+        if (k:= not self._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        return [(self.key, self.value)] + self.left.traverse() + self.right.traverse()
 
     def _haskey__(self):
         return hasattr(self,'key')
@@ -106,3 +113,4 @@ if __name__ == '__main__':
     print(T['b'])
     print(T['l'])
 
+    print(T.traverse())
