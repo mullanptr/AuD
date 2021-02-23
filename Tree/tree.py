@@ -146,19 +146,26 @@ class Node(_AbstractNode):
         return 1 + len(self.left) + len(self.right)
 
 if __name__ == '__main__':
-    T = Node()
-    T['b'] = 2
-    T['c'] = 3
-    T['d'] = 4
-    T['e'] = 5
-    T['n'] = 9
-    T['m'] = 8
-    T['l'] = 7
-    T['o'] = 10
-    print(T)
+    T1 = Node()
+    T1['b'] = 2
+    T1['c'] = 3
+    T1['d'] = 4
+    T1['e'] = 5
+    T1['n'] = 9
+    T1['m'] = 8
+    T1['l'] = 7
+    T1['o'] = 10
 
-    print(T['n'])
-    print(T['b'])
-    print(T['l'])
+    print(T1.traverse())
 
-    print(T.traverse())
+    T2 = Node()
+    T2['g'] = 2
+    T2['h'] = 3
+    T2['i'] = 4
+    T2['j'] = 5
+    T2['k'] = 9
+    T2['f'] = 8
+    T2['z'] = 7
+    T2['y'] = 10
+
+    print(T1+T2)
