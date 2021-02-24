@@ -93,12 +93,18 @@ class Node(_AbstractNode):
                 yield k, v
 
     def __iadd__(self, other, overwrite=True):
+        if (k:= not self._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        if (k:= not other._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        assert type(self.key) == type(other.key), f'Keys need to be of same type; But they are ({type(self.key)} <-> {type(other.key)}).'
         for k, v in other.items():
             if k not in self or overwrite:
                 self[k] = v
         return self
 
     def __add__(self, other, overwrite=True):
+        if (k:= not self._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        if (k:= not other._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        assert type(self.key) == type(other.key), f'Keys need to be of same type; But they are ({type(self.key)} <-> {type(other.key)}).'
         new = Node()
         for k, v in self.items():
             new[k] = v
