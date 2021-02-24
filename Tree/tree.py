@@ -113,6 +113,16 @@ class Node(_AbstractNode):
                 new[k] = v
         return new
 
+    def __sub__(self, other):
+        if (k:= not self._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        if (k:= not other._haskey__()): raise RuntimeError # key is None -> not a grown tree
+        assert type(self.key) == type(other.key), f'Keys need to be of same type; But they are ({type(self.key)} <-> {type(other.key)}).'
+        new = Node()
+        for k, v in self.items():
+            if k not in other:
+                new[k] = v
+        return new
+
     def _haskey__(self):
         return hasattr(self,'key')
 
@@ -173,5 +183,7 @@ if __name__ == '__main__':
     T2['f'] = 8
     T2['z'] = 7
     T2['y'] = 10
+    T2['l'] = 10
+    T2['o'] = 10
 
-    print(T1+T2)
+    print(T1-T2)
