@@ -26,5 +26,5 @@ as close as possible.
 
 Splitting a tree according to the highest information gain possible
 
-Will be used in an implementaion of a random forest
+Will be used in an implementaion of a single random tree -> Will be used in an implementation of a random forest
 
