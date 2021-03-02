@@ -5,7 +5,7 @@ from collections import defaultdict
 
 def single_ent(p):
     """
-    Entropy of a single probaility.
+    Entropy of a single probability, i.e. a float \in [0|1].
 
     Remarks:
     - Uses log2 -> Thus units is [bits].
@@ -39,6 +39,30 @@ def _helper_infogain(df, gt_col, orig_len):
     ent = entropy(probs=priors)
     return weight * ent
 
+def _infogain(dfs, gt_col):
+
+    assert len(dfs) == 3
+    assert len(dfs[0]) == len(dfs[1]) + len(dfs[2])
+
+    orig_ent = _helper_infogain(df=dfs[0], gt_col=gt_col, orig_len=len(dfs[0]))
+    low_ent = _helper_infogain(df=dfs[1], gt_col=gt_col, orig_len=len(dfs[0]))
+    high_ent = _helper_infogain(df=dfs[2], gt_col=gt_col, orig_len=len(dfs[0]))
+
+    return orig_ent - (low_ent + high_ent)
+
+def _define_mumber_of_samples(method, max_samples):
+
+    if isinstance(method, str):
+        if method=='all':
+            samples = max_samples
+        if method=='sqrt':
+            samples = int(np.sqrt(max_samples))
+
+    assert isinstance(samples, int), f'method needs to be of type str ("all","sqrt") or a int, but is type {type(method)}'
+
+    samples = min(samples, max_samples)
+    return samples
+
 def split(df, splitcol, splitval):
     """
     Splits a df into two dfs: (df_low, df_high).
@@ -51,18 +75,6 @@ def split(df, splitcol, splitval):
     df_high = df.loc[df[splitcol] > splitval]
     return df_low, df_high
 
-
-def _infogain(dfs, gt_col):
-
-    assert len(dfs) == 3
-    assert len(dfs[0]) == len(dfs[1]) + len(dfs[2])
-
-    orig_ent = _helper_infogain(df=dfs[0], gt_col=gt_col, orig_len=len(dfs[0]))
-    low_ent = _helper_infogain(df=dfs[1], gt_col=gt_col, orig_len=len(dfs[0]))
-    high_ent = _helper_infogain(df=dfs[2], gt_col=gt_col, orig_len=len(dfs[0]))
-
-    return orig_ent - (low_ent + high_ent)
-
 def find_split(df, gt_col, samplecols='sqrt', samplevals='sqrt', verbose=False):
     """
     Randomly searches for the best split of df on a feature column.
@@ -74,11 +86,14 @@ def find_split(df, gt_col, samplecols='sqrt', samplevals='sqrt', verbose=False):
     df: pd.DataFrame
     gt_col: str
         class column; Not searched over, but required to asses split quality
-    samplecols: Union(str,int)
-        Number of columns to search over.
-        If `sqrt`, then sqrt of number of columns are randomly tested,
-        If `all`, then all columns are tested,
-        Else: Int, defining number of searchable columns
+    samplecols: Union(str,int,list)
+        if str or int:
+            Number of columns to search over.
+            If `sqrt`, then sqrt of number of columns are randomly tested,
+            If `all`, then all columns are tested,
+            Else: Int, defining number of searchable columns
+        if list:
+            user-defined list of columns to test for
     samplevals: Union(str,int)
         Number of values within a colum to search over.
         If `sqrt`, then sqrt of number of values per column are randomly tested,
@@ -91,22 +106,20 @@ def find_split(df, gt_col, samplecols='sqrt', samplevals='sqrt', verbose=False):
         The best colum that was found to yield the best split
     best_col: str
         The best value for `best_col` that was found to yield the best split
-    info_gain: float
-        Value denoting information gain for proposed split
+    info_gain: dict
+        dictionary with all tested columns as key and their best information gain as tuple (value_to_split_on, ig)
     """
 
     cols = set(df.keys()) - set((gt_col,))
     assert len(cols) == len(df.keys()) - 1
     cols = list(cols)
 
-    if samplecols=='all':
-        samplecols = len(cols)
-    if samplecols=='sqrt':
-        samplecols = int(np.sqrt(len(cols)))
+    if not isinstance(samplecols,list):
+        # if no list of columns to test for was provided, randomly select columns to test for
+        num_samplecols = _define_mumber_of_samples(method=samplecols, max_samples=len(cols))
+        assert 0 < num_samplecols <= len(cols)
 
-    assert 0 < samplecols <= len(cols)
-
-    samplecols = np.random.choice(cols,samplecols,replace=False)
+        samplecols = np.random.choice(cols,num_samplecols,replace=False)
 
     if verbose:
         print(f' Sample from cols {samplecols}')
@@ -119,15 +132,14 @@ def find_split(df, gt_col, samplecols='sqrt', samplevals='sqrt', verbose=False):
 
     for c in samplecols:
 
+        # uniq vals in column df[c]
         vals = sorted(df[c].unique())[:-1]
         if len(vals) == 0:
             if verbose:
                 print('      No variance for this col')
             continue
-        if samplevals=='all':
-            v = len(vals)
-        if samplevals=='sqrt':
-            v = int(np.sqrt(len(vals)))
+
+        v = _define_mumber_of_samples(method=samplevals, max_samples=len(vals))
         assert 0 < v <= len(vals)
 
         vals = np.random.choice(vals,v,replace=False)
@@ -141,11 +153,11 @@ def find_split(df, gt_col, samplecols='sqrt', samplevals='sqrt', verbose=False):
 
             if c not in igs:
                 # no score yet
-                igs[c] = [v, ig]
+                igs[c] = (v, ig)
             else:
                 if igs[c][1] < ig:
-                    #update score
-                    igs[c] = [v, ig]
+                    #update score if a better was found
+                    igs[c] = (v, ig)
 
             if ig > best_ig:
                 best_col = c
@@ -157,8 +169,6 @@ def find_split(df, gt_col, samplecols='sqrt', samplevals='sqrt', verbose=False):
         print(igs)
 
     return best_col, best_val, igs
-
-
 
 if __name__ == '__main__':
 
