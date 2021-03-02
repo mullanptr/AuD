@@ -22,3 +22,9 @@ I overwrote magic methods like `__getitem__()` or `__setitem__()` which enables 
 reading elements in a tree `t` with `t[key] = value`, making them behave like dictionaries
 as close as possible.
 
+### Information Gain
+
+Splitting a tree according to the highest information gain possible
+
+Will be used in an implementaion of a random forest
+
