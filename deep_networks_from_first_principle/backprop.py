@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 
 debug_w0 = np.array([[0.13436424411240122, 0.8474337369372327]])
 debug_b0 = np.array([[0.763774618976614]])
@@ -28,7 +29,6 @@ class fully_connected_layer():
     biases = None
     y_pred = None
     err = None
-    epochs_trained = 0
 
     def __str__(self):
         s =  ''
@@ -40,7 +40,6 @@ class fully_connected_layer():
         s += str(self.y_pred)
         s += '\n\terr:\n'
         s += str(self.err)
-        s += f'\n\tepochs_trained: {self.epochs_trained}'
         return s
 
     def __init__(self, input_len, output_len):
@@ -55,11 +54,6 @@ class fully_connected_layer():
         self.y_pred = res
         return res
 
-    def backprop(self, err):
-        self.err = np.matmul(self.weights, err.T)
-        self.epochs_trained += 1
-        return self.err
-
 class model():
 
     def __str__(self):
@@ -70,7 +64,7 @@ class model():
             s += '\n###################################\n'
         return s
 
-    def __init__(self,layers=[2,3,2], random_state=1, loss_fct=lambda y_true, y_pred: y_true - y_pred):
+    def __init__(self,layers=[2,3,2,5,1,2], random_state=1, loss_fct=lambda y_true, y_pred: y_true - y_pred, learning_rate=.1):
         np.random.seed(random_state)
         self.layers = [fully_connected_layer(input_len=i, output_len=j) for i,j in zip(layers[:-1], layers[1:])]
         self.loss_fct = loss_fct
@@ -83,32 +77,44 @@ class model():
     def loss(self, y_true, y_pred):
         return self.loss_fct(y_true, y_pred)
 
-    def backprop(self, y_true, y_pred):
+    def _calc_updates(self, learning_rate, weight, delta, data):
+        import pudb; pudb.set_trace()
+        return weight + learning_rate * delta * data
+
+    def _update(self, data, learning_rate):
+        for i, l in enumerate(self.layers):
+            w_new = self._calc_updates(learning_rate, weight=l.weights, delta=l.deltas, data=data)
+            l.weights = w_new
+            data = l.y_pred
+
+    def _backprop(self, y_true, y_pred):
 
         err = self.loss(y_true, y_pred)
+
         for i, l in enumerate(self.layers[::-1]):
             derivatives = l.activation.derivative(l.y_pred)
             deltas = err * derivatives
             l.err = err
             l.deltas = deltas
             err = np.matmul(deltas,l.weights.T)
-            print(deltas)
-            print(err)
-            print()
+
+    def train(self, data, y_true, epochs=10, learning_rate=.1):
+        for e in tqdm(range(epochs)):
+            y_pred = self.predict(data)
+            self._backprop(y_true=y_true, y_pred=y_pred)
+            self._update(data=data, learning_rate=learning_rate)
 
 if __name__ == '__main__':
 
     m = model()
 
-    m.layers[0].weights = debug_w0.T
-    m.layers[0].biases  = debug_b0.T
-    m.layers[1].weights = debug_w1.T
-    m.layers[1].biases  = debug_b1.T
+    #m.layers[0].weights = debug_w0.T
+    #m.layers[0].biases  = debug_b0.T
+    #m.layers[1].weights = debug_w1.T
+    #m.layers[1].biases  = debug_b1.T
 
-    p = m.predict(np.array([[1,0]]))
-    m.backprop([[0,1]], p)
-
-    import sys; sys.exit(1)
+    #p = m.predict(np.array([[1,0]]))
+    #m.backprop([[0,1]], p)
 
     X = np.array([
             [1,0],
@@ -126,4 +132,4 @@ if __name__ == '__main__':
 
     batch_size = 2
     p = m.predict(X[:batch_size,:])
-    m.backprop(y[:batch_size,:], p)
+    m.train(X[:batch_size,:], y[:batch_size,:])
