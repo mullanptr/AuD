@@ -24,12 +24,23 @@ class sigmoid():
 
 class fully_connected_layer():
 
+    weights = None
+    biases = None
+    y_pred = None
+    err = None
+    epochs_trained = 0
+
     def __str__(self):
         s =  ''
         s += '\tweights:\n'
         s += str(self.weights)
         s += '\n\tbiases:\n'
         s += str(self.biases)
+        s += '\n\ty_pred:\n'
+        s += str(self.y_pred)
+        s += '\n\terr:\n'
+        s += str(self.err)
+        s += '\n\tepochs_trained: {self.epochs_trained}'
         return s
 
     def __init__(self, input_len, output_len):
@@ -46,6 +57,7 @@ class fully_connected_layer():
 
     def backprop(self, err):
         self.err = np.matmul(self.weights, err.T)
+        self.epochs_trained += 1
         return self.err
 
 class model():
@@ -58,9 +70,10 @@ class model():
             s += '\n###################################\n'
         return s
 
-    def __init__(self,layers=[2,3,1], random_state=1):
+    def __init__(self,layers=[2,3,1], random_state=1, loss_fct=lambda y_true, y_pred: y_true - y_pred):
         np.random.seed(random_state)
         self.layers = [fully_connected_layer(input_len=i, output_len=j) for i,j in zip(layers[:-1], layers[1:])]
+        self.loss_fct = loss_fct
 
     def predict(self,input_data):
         for i, l in enumerate(self.layers):
@@ -68,14 +81,17 @@ class model():
         return input_data
 
     def loss(self, y_true, y_pred):
-        return y_true - y_pred
+        return self.loss_fct(y_true, y_pred)
 
     def backprop(self, y_true, y_pred):
+
         err = self.loss(y_true, y_pred)
         for i, l in enumerate(self.layers[::-1]):
-            err = err * l.activation.derivative(l.y_pred)
-            print(f'(delta): {err}')
-            err = l.backprop(err)
+            derivatives = l.activation.derivative(l.y_pred)
+            deltas = err * derivatives
+            l.err = err
+            l.deltas = deltas
+            err = np.matmul(l.weights, deltas.T)
 
 if __name__ == '__main__':
 
