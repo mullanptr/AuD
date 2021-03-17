@@ -40,7 +40,7 @@ class fully_connected_layer():
         s += str(self.y_pred)
         s += '\n\terr:\n'
         s += str(self.err)
-        s += '\n\tepochs_trained: {self.epochs_trained}'
+        s += f'\n\tepochs_trained: {self.epochs_trained}'
         return s
 
     def __init__(self, input_len, output_len):
@@ -70,7 +70,7 @@ class model():
             s += '\n###################################\n'
         return s
 
-    def __init__(self,layers=[2,3,1], random_state=1, loss_fct=lambda y_true, y_pred: y_true - y_pred):
+    def __init__(self,layers=[2,3,2], random_state=1, loss_fct=lambda y_true, y_pred: y_true - y_pred):
         np.random.seed(random_state)
         self.layers = [fully_connected_layer(input_len=i, output_len=j) for i,j in zip(layers[:-1], layers[1:])]
         self.loss_fct = loss_fct
@@ -91,7 +91,10 @@ class model():
             deltas = err * derivatives
             l.err = err
             l.deltas = deltas
-            err = np.matmul(l.weights, deltas.T)
+            err = np.matmul(deltas,l.weights.T)
+            print(deltas)
+            print(err)
+            print()
 
 if __name__ == '__main__':
 
@@ -105,6 +108,8 @@ if __name__ == '__main__':
     p = m.predict(np.array([[1,0]]))
     m.backprop([[0,1]], p)
 
+    import sys; sys.exit(1)
+
     X = np.array([
             [1,0],
             [1,0],
@@ -113,11 +118,12 @@ if __name__ == '__main__':
         ])
 
     y = np.array([
-            [0],
-            [0],
-            [1],
-            [1],
+            [0,1],
+            [0,1],
+            [1,1],
+            [1,1],
         ])
 
-    batch_size = 1
+    batch_size = 2
     p = m.predict(X[:batch_size,:])
+    m.backprop(y[:batch_size,:], p)
