@@ -22,11 +22,24 @@ I overwrote magic methods like `__getitem__()` or `__setitem__()` which enables 
 reading elements in a tree `t` with `t[key] = value`, making them behave like dictionaries
 as close as possible.
 
-### Information Gain
+### Information Gain in Random Forests
 
-Splitting a tree according to the highest information gain possible
+Splitting a tree according to the highest information gain possible.
 
-Will be used in an implementaion of a single random tree -> Will be used in an implementation of a random forest
+This is done via **mutual information**. Mutal Information (MI) determines the amount
+of dependency between two random variables. It estimates the amount of information
+gained on an unknown secondary variable by observing the primary variable. 
+In the concrete implementation the observed primary variable(s) is (are) features.
+From that the probability of the classes, i.e., the secondary variable, is calculated.
+
+The module `InformationGain/informationgain.py` can be used on its own to analyze 
+custom problems on mutual information.
+Additionally, the module `InformationGain/random_tree.py` can be used to build
+a tree estimator, which finds its decisions during training based on this 
+mutual information implementation. 
+
+Lastly, a random forest can be built by having an ensemble of (decorrelated) 
+random trees.
 
 ### Sudoku Solver
 
