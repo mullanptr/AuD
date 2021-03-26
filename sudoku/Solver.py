@@ -1,6 +1,6 @@
 import numpy as np
 from board import board
-from UnsolvableError import UnsolvableError
+from UnsolvableError import UnsolvableBoardError
 
 class _SingleSolver():
 
@@ -10,7 +10,7 @@ class _SingleSolver():
     def _solve(self, board):
 
         if not hasattr(self, 'gen'):
-            self.gen = iter(range(board.minval, board.maxval))
+            self.gen = iter(range(board.minval, board.maxval + board.minval))
 
         for val in self.gen:
             if board.checker(coords=self.coords, val=val):
@@ -48,8 +48,9 @@ class Solver():
                 self.unsolved[self.ptr]._resetVal(self.board)
                 backward_steps += 1
 
+
             if self.ptr < 0:
-                raise UnsolvableError('Could not determine a solution for the board.')
+                raise UnsolvableBoardError('Could not determine a solution for the board.')
 
         print(f'Needed {forward_steps} forward and {backward_steps} backward steps.')
 

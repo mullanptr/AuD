@@ -1,7 +1,7 @@
 class MyError(Exception):
     pass
 
-class UnsolvableError(MyError):
-    def __init__(self, meassage):
+class UnsolvableBoardError(MyError):
+    def __init__(self, message):
         self.message = message
 

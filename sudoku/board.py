@@ -2,26 +2,16 @@ import numpy as np
 
 class board():
 
-    def __init__(self, h=3, w=3):
-        self.h = h
-        self.w = w
+    def __init__(self, np2darr):
+
+        self.h, self.w = np2darr.shape
+        assert self.h == self.w, f'Only rectangular boards allowed; Board has shape: {np2darr.shape}'
+        self.quaterLen = int(np.sqrt(self.h))
+        self.board = np2darr
+
         self.empty_symbol = 0
         self.minval = 1
-        self.maxval = h * w + 1
-        self.possible_vals = set(range(self.minval, self.maxval))
-
-        self.board = np.array(
-                    [[5,3,0,0,7,0,0,0,0],
-                    [6,0,0,1,9,5,0,0,0],
-                    [0,9,8,0,0,0,0,6,0],
-                    [8,0,0,0,6,0,0,0,3],
-                    [4,0,0,8,0,3,0,0,1],
-                    [7,0,0,0,2,0,0,0,6],
-                    [0,6,0,0,0,0,2,8,0],
-                    [0,0,0,4,1,9,0,0,5],
-                    [0,0,0,0,8,0,0,7,9]])
-
-        self.unsolved = list(zip(*np.where(self.board == 0)))
+        self.maxval = self.h
 
     def __str__(self):
 
@@ -51,10 +41,10 @@ class board():
         return s
 
     def _getQuater(self, coords):
-        x = (coords[1] // self.w) * self.w
-        y = (coords[0] // self.h) * self.h
-        tri = self.board[y:y+self.h, x:x+self.w].ravel()
-        assert len(tri) == self.h * self.w
+        x = (coords[1] // self.quaterLen) * self.quaterLen
+        y = (coords[0] // self.quaterLen) * self.quaterLen
+        tri = self.board[y:y+self.quaterLen, x:x+self.quaterLen].ravel()
+        assert len(tri) == self.quaterLen * self.quaterLen
         return tri
 
     def _check(self, val, arr):
