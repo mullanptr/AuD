@@ -28,3 +28,14 @@ Splitting a tree according to the highest information gain possible
 
 Will be used in an implementaion of a single random tree -> Will be used in an implementation of a random forest
 
+### Sudoku Solver
+
+Sudoku is used as example for `backtracking`.
+Backtracking is a method to solve tasks by ``trial and error''.
+That means a partial solution that is valid at the current state is proposed.
+Only if a later state can not proceed the solution is updated to the next valid partial
+solution.
+
+The method terminates if the entire problem set is solved correctly -- or if no solution
+for the entire process can be found. In latter case the concrete implementation returns an
+error indicating that it is an ill-posed problem.
